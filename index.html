@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+  <title>Battery Timer</title>
+  <style>
+    :root {
+      --bg: #0f1115; --text: #e8ebf1; --muted:#9aa3b2; --border:#262b36;
+      --green:#22c55e; --yellow:#f59e0b; --red:#ef4444; --cap:#cbd5e1;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin:0; padding:16% 0 0; height:100%; background:#3b3c40; color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP"; }
+    
+    /* Settings (top-right) */
+    .settings-btn {
+      position: fixed; top: 14px; right: 14px; z-index: 20;
+      width: 40px; height: 40px; border-radius: 12px; border:1px solid var(--border);
+      background: #0f1320; display:grid; place-items:center; cursor:pointer;
+    }
+    .settings-btn:hover { filter: brightness(1.05); }
+    .settings-btn svg { width:22px; height:22px; }
+
+    .chobo {
+      background-color: #0e121a;
+      margin: 0 auto -2px;
+      width: 30%;
+      height: 5%;
+      border-radius: 10px 10px 0 0;
+      border: 2px solid var(--border);
+
+    }
+
+    /* Battery only view */
+    .battery {
+      position: relative;
+      margin: 0 auto 0; 
+      width: 80%;
+      height: 70%;
+      border: 2px solid var(--border);
+      border-radius: 38px;
+      background: linear-gradient(180deg, #0e121a 0%, #0b0e15 100%);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), inset 0 10px 30px rgba(0,0,0,0.6);
+      overflow: hidden;
+      cursor: pointer; touch-action: manipulation;
+    }
+    .battery::before { /* top cap */
+      content:""; position:absolute; top:-16px; left:50%; transform:translateX(-50%);
+      width:60px; height:12px; border-radius:8px; background:var(--cap); opacity:0.9; box-shadow:0 2px 0 rgba(0,0,0,0.25);
+    }
+    .fill {
+      position:absolute; left:0; bottom:0; width:100%; height:100%;
+      transition: height 160ms linear, background-color 160ms linear;
+      background: var(--green); box-shadow: inset 0 0 24px rgba(0,0,0,0.35);
+      border-radius: 18px;
+    }
+    .ticklines {
+      position: absolute; inset: 12px;
+      pointer-events: none;
+      border-radius: 14px;
+    }
+
+    .tickline {
+      position: absolute;
+      left: 0; right: 0;
+      height: 1px;
+      background: rgba(255,255,255,0.15);
+    }
+
+    /* Seconds overlay on the battery front */
+    .seconds-overlay {
+      position:absolute; inset:0; display:grid; place-items:center; pointer-events:none;
+      font-variant-numeric: tabular-nums;
+    }
+    .seconds-text { font-size: 30vw; font-family: "Space Grotesk", sans-serif;
+      font-optical-sizing: auto;
+      font-weight: 700;
+      font-style: normal; letter-spacing: 1px; text-shadow: 0 2px 10px rgba(0,0,0,0.6); }
+    .hint { position:absolute; bottom:10px; width:100%; text-align:center; font-size:12px; color:var(--muted); pointer-events:none; }
+
+    #resetBtn {
+      margin: 10% auto;
+      width: 60%;
+      background-color: #b31031;
+      padding: 16px;
+      font-size: 2rem;
+      border-radius: 38px;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display:none;
+       align-items:center; justify-content:center; z-index: 30;
+    }
+    .modal {
+      width: 70%; background:#0f1320; border:1px solid var(--border); border-radius: 16px; padding:18px;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.45);
+    }
+    .modal h2 { margin:0 0 12px; font-size:20px; }
+    .row { display:flex; gap:4px; align-items:center; margin-top:8px; }
+    label { font-size:20px; color:var(--muted); min-width: 6em; }
+    input[type="number"] {
+      flex:1;
+      padding:10px 6px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:#0b0f1a;
+      color:var(--text);
+      font-size:20px;
+    }
+    .modal-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:28px; }
+    .btn { border:1px solid var(--border);
+      background:#0b0f1a;
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:10px;
+      font-weight:700;
+      cursor:pointer;
+      font-size:14px;
+      margin-right: 30px;}
+    .btn.primary { background:#25990e; }
+    .modal-backdrop.show { display:flex; }
+  </style>
+</head>
+<body>
+  <!-- Settings button -->
+  <button class="settings-btn" id="openSettings" aria-label="設定を開く">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+      <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0A1.65 1.65 0 0 0 9 3.09V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0A1.65 1.65 0 0 0 20.91 9H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
+    </svg>
+  </button>
+
+     
+  <div class="chobo"></div>
+  <div class="battery" id="battery">
+    <div class="fill" id="fill"></div>
+    <div class="ticklines" id="ticklines"></div> <!-- ←ここにJSで線を追加 -->
+    <div class="seconds-overlay"><div class="seconds-text" id="seconds">10</div></div>
+  </div>
+  
+  <div class="reset-area" style="display:none; text-align:center;">
+    <button id="resetBtn" class="btn primary">RESET</button>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-backdrop" id="modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <h2 id="settingsTitle">設定</h2>
+      <div class="row">
+        <label for="durationInput">秒数</label>
+        <input id="durationInput" type="number" min="1" max="3600" step="1" inputmode="numeric" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="cancelBtn">キャンセル</button>
+        <button class="btn primary" id="saveBtn">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const STORAGE_KEY = 'battery_timer_duration_v1';
+      const batteryEl = document.getElementById('battery');
+      const fillEl = document.getElementById('fill');
+      const secEl = document.getElementById('seconds');
+
+      // Modal elems
+      const modal = document.getElementById('modal');
+      const openBtn = document.getElementById('openSettings');
+      const cancelBtn = document.getElementById('cancelBtn');
+      const saveBtn = document.getElementById('saveBtn');
+      const durationInput = document.getElementById('durationInput');
+
+      const resetArea = document.querySelector('.reset-area');
+      const resetBtn = document.getElementById('resetBtn');
+
+
+      // State
+      let duration = Number(localStorage.getItem(STORAGE_KEY)) || 10;
+      let remaining = duration;
+      let timerId = null;
+      let lastTick = null;
+
+      function setColor(rem) {
+        const ratio = rem / duration;
+        if (ratio > 0.6) {
+          fillEl.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--green').trim();
+        } else if (ratio > 0.3) {
+          fillEl.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--yellow').trim();
+        } else {
+          fillEl.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--red').trim();
+        }
+      }
+
+      function render() {
+        secEl.textContent = Math.max(0, Math.ceil(remaining)).toString();
+        const pct = Math.max(0, Math.min(1, remaining / duration));
+        fillEl.style.height = (pct * 100) + '%';
+        setColor(remaining);
+      }
+
+      function tick(now) {
+        if (!lastTick) lastTick = now;
+        const delta = (now - lastTick) / 1000;
+        lastTick = now;
+
+        remaining -= delta;
+        if (remaining <= 0) {
+          remaining = 0;
+          render();
+          stopTimer(); // 0でいったん停止（タップで再開）
+          enableBatteryTap(false);             // バッテリー操作を無効化
+          resetArea.style.display = 'block';   // リセットボタンを表示
+          return;
+        }
+        render();
+        timerId = requestAnimationFrame(tick);
+      }
+
+      function startTimer() {
+        if (timerId) return;
+        lastTick = null;
+        timerId = requestAnimationFrame(tick);
+      }
+      function stopTimer() {
+        if (timerId) cancelAnimationFrame(timerId);
+        timerId = null;
+      }
+      function resetAndStart() {
+        remaining = duration;
+        render();
+        startTimer();
+      }
+
+      // Modal controls
+      function openModal() {
+        durationInput.value = duration;
+        modal.classList.add('show');
+        setTimeout(() => durationInput.focus(), 0);
+      }
+      function closeModal() {
+        modal.classList.remove('show');
+      }
+
+      function drawTicklines() {
+        const container = document.getElementById('ticklines');
+        container.innerHTML = ''; // 一度リセット
+
+        // 区切りは「duration - 1」本
+        for (let i = 1; i < duration; i++) {
+          const line = document.createElement('div');
+          line.className = 'tickline';
+          // 下からの相対位置（パーセント指定）
+          line.style.bottom = `${(i / duration) * 100}%`;
+          container.appendChild(line);
+        }
+      }
+
+      remaining = duration;
+      render();
+      drawTicklines();   // ←これを追加
+
+
+      let batteryEnabled = true;
+
+      function enableBatteryTap(flag) {
+        batteryEnabled = flag;
+        batteryEl.style.pointerEvents = flag ? 'auto' : 'none';
+        batteryEl.style.opacity = flag ? '1' : '0.6'; // 見た目で無効感を出すなら
+      }
+
+
+
+      openBtn.addEventListener('click', openModal);
+      cancelBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+      saveBtn.addEventListener('click', () => {
+        const v = Math.max(1, Math.min(3600, parseInt(durationInput.value || '10', 10)));
+        duration = v;
+        localStorage.setItem(STORAGE_KEY, String(duration));
+        enableBatteryTap(true);
+        remaining = duration;
+        render();
+        closeModal();
+      });
+
+      // Interaction
+      batteryEl.addEventListener('click', resetAndStart, { passive: true });
+      batteryEl.addEventListener('touchstart', (e) => { e.preventDefault(); resetAndStart(); }, { passive: false });
+      window.addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); resetAndStart(); } });
+
+      resetBtn.addEventListener('click', () => {
+        resetArea.style.display = 'none'; // ボタン消す
+        enableBatteryTap(true);           // バッテリータップ復活
+        remaining = duration;
+        render();
+      });
+
+
+      // Init
+      remaining = duration;
+      render();
+    })();
+  </script>
+</body>
+</html>
