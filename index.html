@@ -15,13 +15,13 @@
   <style>
     :root {
       --bg: #0f1115;
-      --text: #e8ebf1;
+      --text: #000000;
       --muted: #9aa3b2;
       --border: #262b36;
       --green: #22c55e;
       --yellow: #f59e0b;
       --red: #ef4444;
-      --cap: #cbd5e1;
+      --cap: #e2e2e2;
     }
 
     * {
@@ -55,29 +55,24 @@
       /* ピンチズームやダブルタップズームを完全に防ぐ */
     }
 
-    /* Settings (top-right) */
-    .settings-btn {
+    .score-btn {
       position: fixed;
       top: 14px;
       right: 14px;
       z-index: 20;
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: #0f1320;
-      display: grid;
-      place-items: center;
+      width: 50px;
+      height: 50px;
       cursor: pointer;
+      transition: filter 0.2s, opacity 0.2s;
     }
 
-    .settings-btn:hover {
-      filter: brightness(1.05);
+    .score-btn:hover {
+      filter: brightness(1.1);
     }
 
-    .settings-btn svg {
-      width: 22px;
-      height: 22px;
+    .score-btn.disabled {
+      pointer-events: none;
+      opacity: 0.5;
     }
 
     /* Battery Image Container */
@@ -154,21 +149,6 @@
       box-shadow: inset 0 -2px 5px rgba(0, 0, 0, 0.3), 0 2px 5px rgba(0, 0, 0, 0.2);
     }
 
-    .ticklines {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 2;
-      /* Fillの上 */
-    }
-
-    .tickline {
-      position: absolute;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: rgba(255, 255, 255, 0.15);
-    }
 
     /* Danger Flashing Overlay */
     .danger-overlay {
@@ -193,26 +173,7 @@
       }
     }
 
-    /* Seconds overlay on the battery front */
-    .seconds-overlay {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      pointer-events: none;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .seconds-text {
-      font-size: 30vw;
-      font-family: "Space Grotesk", sans-serif;
-      font-optical-sizing: auto;
-      font-weight: 700;
-      font-style: normal;
-      letter-spacing: 1px;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
-    }
-
+    
     .hint {
       position: absolute;
       bottom: 10px;
@@ -244,92 +205,174 @@
       box-shadow: 0 2px 0 #333, 0 4px 10px rgba(0, 0, 0, 0.5);
     }
 
-    /* Modal */
     .modal-backdrop {
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.5);
-      display: none;
-      align-items: center;
+      display: flex;
+      align-items: flex-end;
       justify-content: center;
       z-index: 30;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .modal-backdrop.hide .modal {
+      transform: translateY(-50%, 100%);
+    }
+
+    
+    .modal-backdrop.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-backdrop.show .modal {
+      transform: translate(-50%, 0);
     }
 
     .modal {
-      width: 70%;
-      background: #0f1320;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 18px;
-      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+      width: 115%;
+      height: 95vh;
+      /* 下にはみ出てもOKなので高めに設定 */
+      background: url('menu.png') top center/100% auto no-repeat;
+      padding: 23vw 27vw 6vw;
+      /* 画像幅に合わせて左右の余白も少し増やす */
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      overflow-y: auto;
+      transform: translate(-50%, 100%);
+      transition: transform 220ms ease;
+    }
+
+    .modalclosebtn{
+      background-color: rgba(0,0,0,0);
+      border: none;
+      position:absolute;
+      top: 4vw;
+      left: 93vw;
+      height: 50px;
+      width: 50px;
+    }
+
+    .player-area {
+      min-height: 240px;
+    }
+    .players-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .player-row {
+      display: grid;
+      grid-template-columns: 1fr 30px 36px 30px;
+      align-items: center;
+    }
+
+    .player-name {
+      min-width: 0;
+      border: none;
+      background-color: rgba(0,0,0,0);
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .score-value {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .score-control,
+    .triangle-btn {
+      border: none;
+      background: var(--cap);
+      color: var(--text);
+      border-radius: 10px;
+      height: 30px;
+      width: 30px;
+      font-size: 22px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .add-player-btn {
+      width: 100%;
+      margin: 14px 0 0;
+    }
+
+    .seconds-setting {
+      margin-top: 110px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .seconds-stepper {
+      display: grid;
+      grid-template-columns: 80px 30px 1fr 30px;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .duration-value {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .game-reset-section {
+      margin-top: 30px;
+    }
+
+    .game-reset-btn {
+      width: 100%;
     }
 
     .modal h2 {
-      margin: 0 0 12px;
-      font-size: 20px;
-    }
-
-    .row {
-      display: flex;
-      gap: 4px;
-      align-items: center;
-      margin-top: 8px;
-    }
-
-    label {
-      font-size: 20px;
-      color: var(--muted);
-      min-width: 6em;
-    }
-
-    input[type="number"] {
-      flex: 1;
-      padding: 10px 6px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: #0b0f1a;
-      color: var(--text);
-      font-size: 20px;
-    }
-
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 28px;
+      margin: 0 0 20px;
+      font-size: 18px;
+      padding-left: 5vh;
     }
 
     .btn {
-      border: 1px solid var(--border);
-      background: #0b0f1a;
+      border: none;
+      background: var(--cap);
       color: var(--text);
       padding: 10px 14px;
       border-radius: 10px;
       font-weight: 700;
       cursor: pointer;
       font-size: 14px;
-      margin-right: 30px;
     }
 
     .btn.primary {
-      background: #25990e;
+      background: #d76868;
+      color:white;
     }
 
-    .modal-backdrop.show {
-      display: flex;
-    }
   </style>
 </head>
 
 <body>
   <!-- Settings button -->
-  <button class="settings-btn" id="openSettings" aria-label="設定を開く">
-    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-      <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
-      <path
-        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0A1.65 1.65 0 0 0 9 3.09V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0A1.65 1.65 0 0 0 20.91 9H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
-    </svg>
-  </button>
+  <img src="score.png" class="score-btn" id="openSettings" alt="設定">
 
   <div class="danger-overlay" id="dangerOverlay"></div>
 
@@ -337,11 +380,7 @@
     <img src="battery.png" id="batteryImg" alt="Battery" class="battery-image">
     <div class="fill-area">
       <div class="fill" id="fill"></div>
-      <div class="ticklines" id="ticklines"></div>
       <!-- ←ここにJSで線を追加 -->
-    </div>
-    <div class="seconds-overlay">
-      <div class="seconds-text" id="seconds">10</div>
     </div>
   </div>
 
@@ -349,17 +388,27 @@
     <button id="resetBtn" class="btn primary">RESET</button>
   </div>
 
-  <!-- Settings Modal -->
+  <!-- Score Modal -->
   <div class="modal-backdrop" id="modal">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-      <h2 id="settingsTitle">設定</h2>
-      <div class="row">
-        <label for="durationInput">秒数</label>
-        <input id="durationInput" type="number" min="1" max="3600" step="1" inputmode="numeric" />
+      <button class="modalclosebtn" onclick="closeModal()"></button>
+      <h2 id="settingsTitle">SCORE</h2>
+      <div class="player-area">
+        <div id="playersList" class="players-list"></div>
+        <button id="addPlayerBtn" class="btn add-player-btn">+ Add Player</button>
       </div>
-      <div class="modal-actions">
-        <button class="btn" id="cancelBtn">キャンセル</button>
-        <button class="btn primary" id="saveBtn">保存</button>
+
+      <div class="seconds-setting">
+        <div class="seconds-stepper">
+          <div class="section-title">TIME</div>
+          <button id="decreaseDurationBtn" class="triangle-btn" type="button">-</button>
+          <div id="durationValue" class="duration-value">10</div>
+          <button id="increaseDurationBtn" class="triangle-btn" type="button">+</button>
+        </div>
+      </div>
+
+      <div class="game-reset-section">
+        <button id="gameResetBtn" class="btn primary game-reset-btn">GAME RESET</button>
       </div>
     </div>
   </div>
@@ -370,15 +419,17 @@
       const batteryEl = document.getElementById('battery');
       const batteryImg = document.getElementById('batteryImg');
       const fillEl = document.getElementById('fill');
-      const secEl = document.getElementById('seconds');
       const dangerOverlay = document.getElementById('dangerOverlay');
 
       // Modal elems
       const modal = document.getElementById('modal');
       const openBtn = document.getElementById('openSettings');
-      const cancelBtn = document.getElementById('cancelBtn');
-      const saveBtn = document.getElementById('saveBtn');
-      const durationInput = document.getElementById('durationInput');
+      const playersList = document.getElementById('playersList');
+      const addPlayerBtn = document.getElementById('addPlayerBtn');
+      const decreaseDurationBtn = document.getElementById('decreaseDurationBtn');
+      const increaseDurationBtn = document.getElementById('increaseDurationBtn');
+      const durationValue = document.getElementById('durationValue');
+      const gameResetBtn = document.getElementById('gameResetBtn');
 
       const resetArea = document.querySelector('.reset-area');
       const resetBtn = document.getElementById('resetBtn');
@@ -389,14 +440,133 @@
       let remaining = duration;
       let timerId = null;
       let lastTick = null;
+      const PLAYER_STORAGE_KEY = 'battery_timer_players_v1';
+      const SCORE_STORAGE_KEY = 'battery_timer_scores_v1';
+      const NAME_CANDIDATES = ['タロウ', 'ハナコ', 'イチロウ', 'ミンス', 'ジウン', 'ヨンホ',
+       'ジヘ', 'ウェイ', 'ファン', 'チャン', 'ソムチャイ', 'ソムスィー', 'グエン', 'チュン',
+        'リン', 'ジョン', 'マイケル', 'デビッド', 'ジェームズ', 'メアリー', 'ジェーン', 'リンダ',
+         'エリザベス', 'ジャック', 'エマ', 'オリビア', 'ジャン', 'ピエール', 'マニー', 'モニク',
+          'ハンス', 'ハインツ', 'ヘルムート', 'イングリット', 'ジョバンニ', 'マリオ', 'ジュゼッペ',
+           'フランチェスカ', 'ホセ', 'フアン', 'マリア', 'カルメン', 'イワン', 'セルゲイ', 'タチアナ',
+            'ナターシャ', 'ムハンマド', 'アフマド', 'アリ', 'ファティマ', 'ライラ', 'ザイナブ',
+             'ジョアン', 'アナ', 'ルイス', 'アントニオ', 'グアダルーペ'];
+
+      function loadPlayers() {
+        const savedPlayers = JSON.parse(localStorage.getItem(PLAYER_STORAGE_KEY) || 'null');
+        const savedScores = JSON.parse(localStorage.getItem(SCORE_STORAGE_KEY) || 'null');
+
+        if (Array.isArray(savedPlayers) && savedPlayers.length >= 2) {
+          return savedPlayers.slice(0, 6).map((name, i) => ({
+            name,
+            score: Array.isArray(savedScores) ? Number(savedScores[i] || 0) : 0
+          }));
+        }
+
+        const name1 = NAME_CANDIDATES[Math.floor(Math.random() * NAME_CANDIDATES.length)];
+        let name2;
+
+        do {
+          name2 = NAME_CANDIDATES[Math.floor(Math.random() * NAME_CANDIDATES.length)];
+        } while (name2 === name1);
+
+        return [
+          { name: name1, score: 0 },
+          { name: name2, score: 0 }
+        ];
+      }
+
+      let players = loadPlayers();
+
+      function savePlayers() {
+        localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(players.map(p => p.name)));
+        localStorage.setItem(SCORE_STORAGE_KEY, JSON.stringify(players.map(p => p.score)));
+      }
+
+      function getRandomUnusedName() {
+        const used = players.map(p => p.name);
+        const unused = NAME_CANDIDATES.filter(name => !used.includes(name));
+        const pool = unused.length ? unused : NAME_CANDIDATES;
+        return pool[Math.floor(Math.random() * pool.length)];
+      }
+
+      function renderPlayers() {
+        playersList.innerHTML = '';
+
+        players.forEach((player, index) => {
+          const row = document.createElement('div');
+          row.className = 'player-row';
+
+          const nameBtn = document.createElement('button');
+          nameBtn.type = 'button';
+          nameBtn.className = 'player-name';
+          nameBtn.textContent = player.name;
+          nameBtn.addEventListener('click', () => {
+            const newName = prompt('Player Name?', player.name);
+            if (newName === null) return;
+            const trimmed = newName.trim();
+            if (!trimmed) return;
+            players[index].name = trimmed;
+            savePlayers();
+            renderPlayers();
+          });
+
+          const minusBtn = document.createElement('button');
+          minusBtn.type = 'button';
+          minusBtn.className = 'score-control';
+          minusBtn.textContent = '−';
+          minusBtn.addEventListener('click', () => {
+            players[index].score -= 1;
+            savePlayers();
+            renderPlayers();
+          });
+
+          const score = document.createElement('div');
+          score.className = 'score-value';
+          score.textContent = players[index].score;
+
+          const plusBtn = document.createElement('button');
+          plusBtn.type = 'button';
+          plusBtn.className = 'score-control';
+          plusBtn.textContent = '+';
+          plusBtn.addEventListener('click', () => {
+            players[index].score += 1;
+            savePlayers();
+            renderPlayers();
+          });
+
+          row.appendChild(nameBtn);
+          row.appendChild(minusBtn);
+          row.appendChild(score);
+          row.appendChild(plusBtn);
+
+          playersList.appendChild(row);
+        });
+
+        addPlayerBtn.style.display = players.length >= 6 ? 'none' : 'block';
+      }
+
+      function resetGameState() {
+        const name1 = getRandomUnusedName();
+        let name2;
+
+        do {
+          name2 = getRandomUnusedName();
+        } while (name2 === name1);
+
+        players = [
+          { name: name1, score: 0 },
+          { name: name2, score: 0 }
+        ];
+        savePlayers();
+        renderPlayers();
+      }
 
       // Audio
       const seStart = new Audio('se/start.mp3');
-      seStart.loop = true;
-      seStart.volume = 0.1;
       const seCharge = new Audio('se/charge.mp3');
       const seEnd = new Audio('se/end.mp3');
       const seReset = new Audio('se/reset.mp3');
+      const seMenu = new Audio('se/menu.mp3');
 
       function setColor(rem) {
         const ratio = rem / duration;
@@ -410,7 +580,6 @@
       }
 
       function render() {
-        secEl.textContent = Math.max(0, Math.ceil(remaining)).toString();
         const pct = Math.max(0, Math.min(1, remaining / duration));
         fillEl.style.height = (pct * 100) + '%';
         setColor(remaining);
@@ -432,6 +601,7 @@
           resetArea.style.display = 'block';   // リセットボタンを表示
           batteryImg.src = "battery2.png";      // 0になったらbattery2.pngにする
           dangerOverlay.style.display = 'block'; // 赤い点滅を表示
+          openBtn.classList.remove('disabled'); // 0になったタイミングで有効化
           return;
         }
         render();
@@ -442,56 +612,49 @@
         if (timerId) return;
         lastTick = null;
         timerId = requestAnimationFrame(tick);
+        openBtn.classList.add('disabled'); // タイマー作動中は無効化
       }
       function stopTimer() {
         if (timerId) cancelAnimationFrame(timerId);
         timerId = null;
-        seStart.pause();
-        seStart.currentTime = 0;
       }
       function resetAndStart() {
         remaining = duration;
-        
+
         // 戻る速度を1秒にするためにtransitionをオーバーライド
         fillEl.style.transition = 'height 1s cubic-bezier(0.25, 1, 0.5, 1), background-color 1s cubic-bezier(0.25, 1, 0.5, 1)';
         render();
-        
+
         // アニメーション完了後（または適当なタイミング）で通常のtick用のtransitionに戻す
         setTimeout(() => {
           fillEl.style.transition = 'height 160ms linear, background-color 160ms linear';
         }, 1000);
 
         startTimer();
-        seStart.play().catch(e => console.error('Audio play failed:', e));
       }
 
       // Modal controls
       function openModal() {
-        durationInput.value = duration;
+        modal.classList.remove('hide');
+        renderPlayers();
+        updateDurationDisplay();
         modal.classList.add('show');
-        setTimeout(() => durationInput.focus(), 0);
       }
       function closeModal() {
-        modal.classList.remove('show');
+          modal.classList.remove('show');
       }
+      window.closeModal = closeModal;
 
-      function drawTicklines() {
-        const container = document.getElementById('ticklines');
-        container.innerHTML = ''; // 一度リセット
+      renderPlayers();
+      updateDurationDisplay();
+      savePlayers();
 
-        // 区切りは「duration - 1」本
-        for (let i = 1; i < duration; i++) {
-          const line = document.createElement('div');
-          line.className = 'tickline';
-          // 下からの相対位置（パーセント指定）
-          line.style.bottom = `${(i / duration) * 100}%`;
-          container.appendChild(line);
-        }
+      function updateDurationDisplay() {
+        durationValue.textContent = duration;
       }
 
       remaining = duration;
       render();
-      drawTicklines();   // ←これを追加
 
 
       let batteryEnabled = true;
@@ -503,27 +666,69 @@
 
 
 
-      openBtn.addEventListener('click', openModal);
-      cancelBtn.addEventListener('click', closeModal);
+      openBtn.addEventListener('click', () => {
+        seMenu.currentTime = 0;
+        seMenu.play().catch(e => console.error(e));
+        openModal();
+      });
       modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
       });
-      saveBtn.addEventListener('click', () => {
-        const v = Math.max(1, Math.min(3600, parseInt(durationInput.value || '10', 10)));
-        duration = v;
+
+      addPlayerBtn.addEventListener('click', () => {
+        if (players.length >= 6) return;
+        players.push({ name: getRandomUnusedName(), score: 0 });
+        savePlayers();
+        renderPlayers();
+      });
+
+      decreaseDurationBtn.addEventListener('click', () => {
+        duration = Math.max(1, duration - 1);
         localStorage.setItem(STORAGE_KEY, String(duration));
-        enableBatteryTap(true);
         remaining = duration;
+        enableBatteryTap(true);
+        updateDurationDisplay();
         render();
-        closeModal();
+      });
+
+      increaseDurationBtn.addEventListener('click', () => {
+        duration = Math.min(3600, duration + 1);
+        localStorage.setItem(STORAGE_KEY, String(duration));
+        remaining = duration;
+        enableBatteryTap(true);
+        updateDurationDisplay();
+        render();
+      });
+
+      gameResetBtn.addEventListener('click', () => {
+        const ok = confirm('ゲームをリセットしますか？');
+        if (!ok) return;
+
+        resetGameState(); //プレイヤースコアリセット
+        duration = 10;    // 2. 時間を10秒にリセット
+        localStorage.setItem(STORAGE_KEY, String(duration)); // 保存
+        remaining = duration;
+        updateDurationDisplay(); // モーダル内の「10」を更新
+        render();               // バッテリーの液量と数字を更新
       });
 
       // Interaction
       function handleBatteryTap() {
-        if (timerId) {
-          seCharge.currentTime = 0;
-          seCharge.play().catch(e => console.error(e));
-        }
+        // 1. まず「今、タイマーが動いているか」を timerId で判定
+        const isRestarting = (timerId !== null);
+
+        // 2. 鳴らす音を決める
+        const targetSound = isRestarting ? seCharge : seStart;
+
+        // 3. 【重要】一度ロードし直して、再生位置を0に戻す
+        // これが「1回目」のロック解除と「2回目以降」の連続再生の両方に効きます
+        targetSound.load(); 
+        targetSound.currentTime = 0;
+
+        // 4. 再生を実行
+        targetSound.play().catch(e => {
+          console.error("再生失敗:", e);
+        });
         resetAndStart();
       }
 
@@ -537,12 +742,13 @@
         remaining = duration;
         batteryImg.src = "battery.png";   // リセット時（待機状態）もbattery.png
         dangerOverlay.style.display = 'none'; // 赤い点滅を消去
+        openBtn.classList.remove('disabled'); // 待機状態に戻るので有効化
 
         fillEl.style.transition = 'height 1s cubic-bezier(0.25, 1, 0.5, 1), background-color 1s cubic-bezier(0.25, 1, 0.5, 1)';
         render();
         setTimeout(() => {
           fillEl.style.transition = 'height 160ms linear, background-color 160ms linear';
-        }, 1000);
+        }, 2000);
 
         seReset.currentTime = 0;
         seReset.play().catch(e => console.error(e));
