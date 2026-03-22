@@ -340,6 +340,8 @@
       background: #d76868;
       color: white;
     }
+
+    
   </style>
 </head>
 
@@ -529,76 +531,71 @@
       }
 
       // Audio (Web Audio API)
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      const audioCtx = AudioContextClass ? new AudioContextClass({ latencyHint: 'interactive' }) : null;
-      const seBuffers = new Map();
-      let audioReady = false;
-      let audioUnlockPromise = null;
-      let audioPreloadPromise = null;
+const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+const audioCtx = AudioContextClass ? new AudioContextClass({ latencyHint: 'interactive' }) : null;
+const seBuffers = new Map();
+let audioReady = false;
+let audioStarted = false;
+let preloadStarted = false;
 
-      async function loadSe(name, url) {
-        if (!audioCtx) return;
-        const res = await fetch(url);
-        const arrayBuffer = await res.arrayBuffer();
-        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-        seBuffers.set(name, audioBuffer);
-      }
+async function loadSe(name, url) {
+  if (!audioCtx) return;
+  const res = await fetch(url);
+  const arrayBuffer = await res.arrayBuffer();
+  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+  seBuffers.set(name, audioBuffer);
+}
 
-      function preloadAudio() {
-        if (!audioCtx) return Promise.resolve();
-        if (audioPreloadPromise) return audioPreloadPromise;
+function preloadAudio() {
+  if (!audioCtx || preloadStarted) return;
+  preloadStarted = true;
 
-        audioPreloadPromise = Promise.all([
-          loadSe('start', 'se/start.mp3'),
-          loadSe('charge', 'se/charge.mp3'),
-          loadSe('end', 'se/end.mp3'),
-          loadSe('reset', 'se/reset.mp3'),
-          loadSe('menu', 'se/menu.mp3')
-        ]).then(() => {
-          audioReady = true;
-        }).catch(err => {
-          console.error('SE preload failed:', err);
-        });
+  Promise.all([
+    loadSe('start', 'se/start.mp3'),
+    loadSe('charge', 'se/charge.mp3'),
+    loadSe('end', 'se/end.mp3'),
+    loadSe('reset', 'se/reset.mp3'),
+    loadSe('menu', 'se/menu.mp3')
+  ]).then(() => {
+    audioReady = true;
+  }).catch(err => {
+    console.error('SE preload failed:', err);
+  });
+}
 
-        return audioPreloadPromise;
-      }
+function ensureAudioUnlocked() {
+  if (!audioCtx || audioStarted) return;
+  audioStarted = true;
 
-      async function unlockAudio() {
-        if (!audioCtx) return;
-        if (audioUnlockPromise) return audioUnlockPromise;
+  // ユーザー操作中に呼ばれる前提
+  if (audioCtx.state !== 'running') {
+    audioCtx.resume().catch(err => {
+      console.error('Audio resume failed:', err);
+    });
+  }
 
-        audioUnlockPromise = (async () => {
-          try {
-            await preloadAudio();
-            if (audioCtx.state !== 'running') {
-              await audioCtx.resume();
-            }
-          } catch (e) {
-            console.error('Audio unlock failed:', e);
-          }
-        })();
+  preloadAudio();
+}
 
-        try {
-          await audioUnlockPromise;
-        } finally {
-          audioUnlockPromise = null;
-        }
-      }
+function playSe(name) {
+  if (!audioCtx || !audioReady) return;
 
-      function playSe(name) {
-        if (!audioCtx || !audioReady) return;
-        const buffer = seBuffers.get(name);
-        if (!buffer) return;
+  const buffer = seBuffers.get(name);
+  if (!buffer) return;
 
-        try {
-          const source = audioCtx.createBufferSource();
-          source.buffer = buffer;
-          source.connect(audioCtx.destination);
-          source.start(0);
-        } catch (e) {
-          console.error('SE play failed:', e);
-        }
-      }
+  try {
+    if (audioCtx.state !== 'running') {
+      audioCtx.resume().catch(() => {});
+    }
+
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioCtx.destination);
+    source.start(0);
+  } catch (e) {
+    console.error('SE play failed:', e);
+  }
+}
 
       preloadAudio();
 
@@ -698,8 +695,8 @@
         batteryEl.style.pointerEvents = flag ? 'auto' : 'none';
       }
 
-      openBtn.addEventListener('click', async () => {
-        await unlockAudio();
+      openBtn.addEventListener('click', () => {
+        ensureAudioUnlocked();
         playSe('menu');
         openModal();
       });
@@ -746,19 +743,30 @@
       });
 
       // Interaction
-      async function handleBatteryTap() {
-        await unlockAudio();
-
+      function handleBatteryTap() {
         const isRestarting = (timerId !== null);
-        playSe(isRestarting ? 'charge' : 'start');
+
+        // 先にUIを即反応させる
         resetAndStart();
+
+        // 音の解錠は待たない
+        ensureAudioUnlocked();
+
+        // 読み込み済みならすぐ鳴る
+        playSe(isRestarting ? 'charge' : 'start');
       }
 
-      batteryEl.addEventListener('click', handleBatteryTap, { passive: true });
-      batteryEl.addEventListener('touchstart', async (e) => {
+      batteryEl.addEventListener('pointerdown', (e) => {
         e.preventDefault();
-        await handleBatteryTap();
+        handleBatteryTap();
       }, { passive: false });
+
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+          e.preventDefault();
+          handleBatteryTap();
+        }
+      });
 
       window.addEventListener('keydown', async (e) => {
         if (e.code === 'Space') {
@@ -767,8 +775,8 @@
         }
       });
 
-      resetBtn.addEventListener('click', async () => {
-        await unlockAudio();
+      resetBtn.addEventListener('click', () => {
+        ensureAudioUnlocked();
 
         resetArea.style.display = 'none';
         enableBatteryTap(true);
@@ -779,6 +787,7 @@
 
         fillEl.style.transition = 'height 1s cubic-bezier(0.25, 1, 0.5, 1), background-color 1s cubic-bezier(0.25, 1, 0.5, 1)';
         render();
+        preloadAudio();
         setTimeout(() => {
           fillEl.style.transition = 'height 160ms linear, background-color 160ms linear';
         }, 2000);
