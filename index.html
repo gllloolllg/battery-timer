@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Yuji+Mai&display=swap" rel="stylesheet">
   <meta name="theme-color" content="#3b3c40">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -28,15 +29,12 @@
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
-      /* テキスト選択不可 */
       -webkit-user-select: none;
-      /* Safari向け選択拒否 */
     }
 
     input,
     textarea {
       user-select: auto;
-      /* 入力欄は選択可能に戻す */
       -webkit-user-select: auto;
     }
 
@@ -50,9 +48,7 @@
       color: var(--text);
       font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP";
       overflow: hidden;
-      /* スクロール防止 */
       touch-action: none;
-      /* ピンチズームやダブルタップズームを完全に防ぐ */
     }
 
     .score-btn {
@@ -75,7 +71,6 @@
       opacity: 0.5;
     }
 
-    /* Battery Image Container */
     .battery-container {
       position: relative;
       margin: 5% auto 0;
@@ -91,9 +86,7 @@
       height: auto;
       position: relative;
       z-index: 2;
-      /* 画像をFillの手前に配置 (透過部分から背景のFillが見える) */
       pointer-events: none;
-      /* クリックはコンテナで受け取る */
     }
 
     .fill-area {
@@ -103,14 +96,8 @@
       left: 15%;
       right: 15%;
       z-index: 1;
-      /* 画像の裏側 */
-      /* 背景を円筒の空洞のように見せるグラデーション */
       background: linear-gradient(90deg, #05070a 0%, #1a2233 20%, #2a364f 50%, #1a2233 80%, #05070a 100%);
-
-      /* 円筒らしく上下を丸める */
       border-radius: 50% / 10px;
-      /* 横幅に対する楕円の丸み（数値は調整してください）*/
-
       overflow: hidden;
       box-shadow: inset 0 10px 20px rgba(0, 0, 0, 0.8), inset 0 -10px 20px rgba(0, 0, 0, 0.8);
     }
@@ -122,16 +109,11 @@
       width: 100%;
       height: 100%;
       transition: height 160ms linear, background-color 160ms linear;
-
-      /* 液体らしい立体感のグラデーション */
       background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.6) 0%, rgba(255, 255, 255, 0.2) 30%, transparent 50%, rgba(0, 0, 0, 0.4) 100%);
       background-color: var(--green);
-
-      /* 底面の丸みを持たせる（親要素に合わせて） */
       border-radius: 50% / 10px;
     }
 
-    /* 液体の「上面」（水面）を表現するための擬似要素 */
     .fill::before {
       content: "";
       position: absolute;
@@ -139,27 +121,20 @@
       left: 0;
       right: 0;
       height: 55px;
-      /* 水面の楕円の高さ */
       margin-top: -10px;
-      /* 高さの半分上にはみ出させる */
       border-radius: 50%;
       background: inherit;
       filter: brightness(1.3);
-      /* 水面を少し明るくする */
       box-shadow: inset 0 -2px 5px rgba(0, 0, 0, 0.3), 0 2px 5px rgba(0, 0, 0, 0.2);
     }
 
-
-    /* Danger Flashing Overlay */
     .danger-overlay {
       position: fixed;
       inset: 0;
       background-color: rgba(255, 0, 0, 0.4);
-      /* 透明な赤色 */
       z-index: 10;
       pointer-events: none;
       display: none;
-      /* 初期状態は非表示 */
       animation: flash 600ms infinite alternate;
     }
 
@@ -173,7 +148,6 @@
       }
     }
 
-    
     .hint {
       position: absolute;
       bottom: 10px;
@@ -217,11 +191,11 @@
       visibility: hidden;
       transition: opacity 0.3s ease, visibility 0.3s ease;
     }
+
     .modal-backdrop.hide .modal {
       transform: translateY(-50%, 100%);
     }
 
-    
     .modal-backdrop.show {
       opacity: 1;
       visibility: visible;
@@ -234,10 +208,8 @@
     .modal {
       width: 115%;
       height: 95vh;
-      /* 下にはみ出てもOKなので高めに設定 */
       background: url('menu.png') top center/100% auto no-repeat;
       padding: 23vw 27vw 6vw;
-      /* 画像幅に合わせて左右の余白も少し増やす */
       border: none;
       border-radius: 0;
       box-shadow: none;
@@ -249,10 +221,10 @@
       transition: transform 220ms ease;
     }
 
-    .modalclosebtn{
-      background-color: rgba(0,0,0,0);
+    .modalclosebtn {
+      background-color: rgba(0, 0, 0, 0);
       border: none;
-      position:absolute;
+      position: absolute;
       top: 4vw;
       left: 93vw;
       height: 50px;
@@ -260,8 +232,9 @@
     }
 
     .player-area {
-      min-height: 240px;
+      min-height: 340px;
     }
+
     .players-list {
       display: flex;
       flex-direction: column;
@@ -277,7 +250,7 @@
     .player-name {
       min-width: 0;
       border: none;
-      background-color: rgba(0,0,0,0);
+      background-color: rgba(0, 0, 0, 0);
       color: var(--text);
       font-size: 16px;
       font-weight: 700;
@@ -286,13 +259,13 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      font-family: "Yuji Mai", serif;
     }
 
     .score-value {
       text-align: center;
       font-size: 22px;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
+      font-family: "Yuji Mai", serif;
     }
 
     .score-control,
@@ -304,7 +277,7 @@
       height: 30px;
       width: 30px;
       font-size: 22px;
-      font-weight: 700;
+      font-family: "Audiowide", sans-serif;
       cursor: pointer;
     }
 
@@ -313,27 +286,27 @@
       margin: 14px 0 0;
     }
 
-    .seconds-setting {
-      margin-top: 110px;
-    }
 
     .section-title {
       font-size: 18px;
-      font-weight: 700;
-      color: var(--text);
+      font-family: "Audiowide", sans-serif;
     }
 
     .seconds-stepper {
+      background-color: #5ea6b8;
+      border-radius: 10px;
+      padding: 6px 12px;
       display: grid;
       grid-template-columns: 80px 30px 1fr 30px;
       gap: 10px;
       align-items: center;
+      color:white
     }
 
     .duration-value {
       text-align: center;
       font-size: 28px;
-      font-weight: 700;
+      font-family: "Audiowide", sans-serif;
       font-variant-numeric: tabular-nums;
     }
 
@@ -347,8 +320,9 @@
 
     .modal h2 {
       margin: 0 0 20px;
-      font-size: 18px;
-      padding-left: 5vh;
+      font-size: 16px;
+      padding-left: 10vw;
+      font-family: "Audiowide", sans-serif;
     }
 
     .btn {
@@ -357,21 +331,19 @@
       color: var(--text);
       padding: 10px 14px;
       border-radius: 10px;
-      font-weight: 700;
+      font-family: "Audiowide", sans-serif;
       cursor: pointer;
       font-size: 14px;
     }
 
     .btn.primary {
       background: #d76868;
-      color:white;
+      color: white;
     }
-
   </style>
 </head>
 
 <body>
-  <!-- Settings button -->
   <img src="score.png" class="score-btn" id="openSettings" alt="設定">
 
   <div class="danger-overlay" id="dangerOverlay"></div>
@@ -380,7 +352,6 @@
     <img src="battery.png" id="batteryImg" alt="Battery" class="battery-image">
     <div class="fill-area">
       <div class="fill" id="fill"></div>
-      <!-- ←ここにJSで線を追加 -->
     </div>
   </div>
 
@@ -388,7 +359,6 @@
     <button id="resetBtn" class="btn primary">RESET</button>
   </div>
 
-  <!-- Score Modal -->
   <div class="modal-backdrop" id="modal">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
       <button class="modalclosebtn" onclick="closeModal()"></button>
@@ -398,13 +368,11 @@
         <button id="addPlayerBtn" class="btn add-player-btn">+ Add Player</button>
       </div>
 
-      <div class="seconds-setting">
-        <div class="seconds-stepper">
-          <div class="section-title">TIME</div>
-          <button id="decreaseDurationBtn" class="triangle-btn" type="button">-</button>
-          <div id="durationValue" class="duration-value">10</div>
-          <button id="increaseDurationBtn" class="triangle-btn" type="button">+</button>
-        </div>
+      <div class="seconds-stepper">
+        <div class="section-title">TIME</div>
+        <button id="decreaseDurationBtn" class="triangle-btn" type="button">-</button>
+        <div id="durationValue" class="duration-value">10</div>
+        <button id="increaseDurationBtn" class="triangle-btn" type="button">+</button>
       </div>
 
       <div class="game-reset-section">
@@ -433,7 +401,6 @@
 
       const resetArea = document.querySelector('.reset-area');
       const resetBtn = document.getElementById('resetBtn');
-
 
       // State
       let duration = Number(localStorage.getItem(STORAGE_KEY)) || 10;
@@ -561,12 +528,79 @@
         renderPlayers();
       }
 
-      // Audio
-      const seStart = new Audio('se/start.mp3');
-      const seCharge = new Audio('se/charge.mp3');
-      const seEnd = new Audio('se/end.mp3');
-      const seReset = new Audio('se/reset.mp3');
-      const seMenu = new Audio('se/menu.mp3');
+      // Audio (Web Audio API)
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      const audioCtx = AudioContextClass ? new AudioContextClass({ latencyHint: 'interactive' }) : null;
+      const seBuffers = new Map();
+      let audioReady = false;
+      let audioUnlockPromise = null;
+      let audioPreloadPromise = null;
+
+      async function loadSe(name, url) {
+        if (!audioCtx) return;
+        const res = await fetch(url);
+        const arrayBuffer = await res.arrayBuffer();
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+        seBuffers.set(name, audioBuffer);
+      }
+
+      function preloadAudio() {
+        if (!audioCtx) return Promise.resolve();
+        if (audioPreloadPromise) return audioPreloadPromise;
+
+        audioPreloadPromise = Promise.all([
+          loadSe('start', 'se/start.mp3'),
+          loadSe('charge', 'se/charge.mp3'),
+          loadSe('end', 'se/end.mp3'),
+          loadSe('reset', 'se/reset.mp3'),
+          loadSe('menu', 'se/menu.mp3')
+        ]).then(() => {
+          audioReady = true;
+        }).catch(err => {
+          console.error('SE preload failed:', err);
+        });
+
+        return audioPreloadPromise;
+      }
+
+      async function unlockAudio() {
+        if (!audioCtx) return;
+        if (audioUnlockPromise) return audioUnlockPromise;
+
+        audioUnlockPromise = (async () => {
+          try {
+            await preloadAudio();
+            if (audioCtx.state !== 'running') {
+              await audioCtx.resume();
+            }
+          } catch (e) {
+            console.error('Audio unlock failed:', e);
+          }
+        })();
+
+        try {
+          await audioUnlockPromise;
+        } finally {
+          audioUnlockPromise = null;
+        }
+      }
+
+      function playSe(name) {
+        if (!audioCtx || !audioReady) return;
+        const buffer = seBuffers.get(name);
+        if (!buffer) return;
+
+        try {
+          const source = audioCtx.createBufferSource();
+          source.buffer = buffer;
+          source.connect(audioCtx.destination);
+          source.start(0);
+        } catch (e) {
+          console.error('SE play failed:', e);
+        }
+      }
+
+      preloadAudio();
 
       function setColor(rem) {
         const ratio = rem / duration;
@@ -594,14 +628,13 @@
         if (remaining <= 0) {
           remaining = 0;
           render();
-          stopTimer(); // 0でいったん停止（タップで再開）
-          seEnd.currentTime = 0;
-          seEnd.play().catch(e => console.error(e));
-          enableBatteryTap(false);             // バッテリー操作を無効化
-          resetArea.style.display = 'block';   // リセットボタンを表示
-          batteryImg.src = "battery2.png";      // 0になったらbattery2.pngにする
-          dangerOverlay.style.display = 'block'; // 赤い点滅を表示
-          openBtn.classList.remove('disabled'); // 0になったタイミングで有効化
+          stopTimer();
+          playSe('end');
+          enableBatteryTap(false);
+          resetArea.style.display = 'block';
+          batteryImg.src = "battery2.png";
+          dangerOverlay.style.display = 'block';
+          openBtn.classList.remove('disabled');
           return;
         }
         render();
@@ -612,20 +645,20 @@
         if (timerId) return;
         lastTick = null;
         timerId = requestAnimationFrame(tick);
-        openBtn.classList.add('disabled'); // タイマー作動中は無効化
+        openBtn.classList.add('disabled');
       }
+
       function stopTimer() {
         if (timerId) cancelAnimationFrame(timerId);
         timerId = null;
       }
+
       function resetAndStart() {
         remaining = duration;
 
-        // 戻る速度を1秒にするためにtransitionをオーバーライド
         fillEl.style.transition = 'height 1s cubic-bezier(0.25, 1, 0.5, 1), background-color 1s cubic-bezier(0.25, 1, 0.5, 1)';
         render();
 
-        // アニメーション完了後（または適当なタイミング）で通常のtick用のtransitionに戻す
         setTimeout(() => {
           fillEl.style.transition = 'height 160ms linear, background-color 160ms linear';
         }, 1000);
@@ -640,9 +673,11 @@
         updateDurationDisplay();
         modal.classList.add('show');
       }
+
       function closeModal() {
-          modal.classList.remove('show');
+        modal.classList.remove('show');
       }
+
       window.closeModal = closeModal;
 
       renderPlayers();
@@ -656,7 +691,6 @@
       remaining = duration;
       render();
 
-
       let batteryEnabled = true;
 
       function enableBatteryTap(flag) {
@@ -664,13 +698,12 @@
         batteryEl.style.pointerEvents = flag ? 'auto' : 'none';
       }
 
-
-
-      openBtn.addEventListener('click', () => {
-        seMenu.currentTime = 0;
-        seMenu.play().catch(e => console.error(e));
+      openBtn.addEventListener('click', async () => {
+        await unlockAudio();
+        playSe('menu');
         openModal();
       });
+
       modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
       });
@@ -704,45 +737,45 @@
         const ok = confirm('ゲームをリセットしますか？');
         if (!ok) return;
 
-        resetGameState(); //プレイヤースコアリセット
-        duration = 10;    // 2. 時間を10秒にリセット
-        localStorage.setItem(STORAGE_KEY, String(duration)); // 保存
+        resetGameState();
+        duration = 10;
+        localStorage.setItem(STORAGE_KEY, String(duration));
         remaining = duration;
-        updateDurationDisplay(); // モーダル内の「10」を更新
-        render();               // バッテリーの液量と数字を更新
+        updateDurationDisplay();
+        render();
       });
 
       // Interaction
-      function handleBatteryTap() {
-        // 1. まず「今、タイマーが動いているか」を timerId で判定
+      async function handleBatteryTap() {
+        await unlockAudio();
+
         const isRestarting = (timerId !== null);
-
-        // 2. 鳴らす音を決める
-        const targetSound = isRestarting ? seCharge : seStart;
-
-        // 3. 【重要】一度ロードし直して、再生位置を0に戻す
-        // これが「1回目」のロック解除と「2回目以降」の連続再生の両方に効きます
-        targetSound.load(); 
-        targetSound.currentTime = 0;
-
-        // 4. 再生を実行
-        targetSound.play().catch(e => {
-          console.error("再生失敗:", e);
-        });
+        playSe(isRestarting ? 'charge' : 'start');
         resetAndStart();
       }
 
       batteryEl.addEventListener('click', handleBatteryTap, { passive: true });
-      batteryEl.addEventListener('touchstart', (e) => { e.preventDefault(); handleBatteryTap(); }, { passive: false });
-      window.addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); handleBatteryTap(); } });
+      batteryEl.addEventListener('touchstart', async (e) => {
+        e.preventDefault();
+        await handleBatteryTap();
+      }, { passive: false });
 
-      resetBtn.addEventListener('click', () => {
-        resetArea.style.display = 'none'; // ボタン消す
-        enableBatteryTap(true);           // バッテリータップ復活
+      window.addEventListener('keydown', async (e) => {
+        if (e.code === 'Space') {
+          e.preventDefault();
+          await handleBatteryTap();
+        }
+      });
+
+      resetBtn.addEventListener('click', async () => {
+        await unlockAudio();
+
+        resetArea.style.display = 'none';
+        enableBatteryTap(true);
         remaining = duration;
-        batteryImg.src = "battery.png";   // リセット時（待機状態）もbattery.png
-        dangerOverlay.style.display = 'none'; // 赤い点滅を消去
-        openBtn.classList.remove('disabled'); // 待機状態に戻るので有効化
+        batteryImg.src = "battery.png";
+        dangerOverlay.style.display = 'none';
+        openBtn.classList.remove('disabled');
 
         fillEl.style.transition = 'height 1s cubic-bezier(0.25, 1, 0.5, 1), background-color 1s cubic-bezier(0.25, 1, 0.5, 1)';
         render();
@@ -750,14 +783,13 @@
           fillEl.style.transition = 'height 160ms linear, background-color 160ms linear';
         }, 2000);
 
-        seReset.currentTime = 0;
-        seReset.play().catch(e => console.error(e));
+        playSe('reset');
       });
 
       // Init
       remaining = duration;
-      batteryImg.src = "battery.png"; // 初期表示
-      dangerOverlay.style.display = 'none'; // 初期状態は非表示
+      batteryImg.src = "battery.png";
+      dangerOverlay.style.display = 'none';
       render();
     })();
   </script>
